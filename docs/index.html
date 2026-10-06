@@ -1,0 +1,854 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Puzl Account SDK Node — Guia do Desenvolvedor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            display: ['Fredoka', 'Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
+          },
+          // Paleta do app da Puzl (mesmo azul das telas do provedor: #1a70b7).
+          colors: {
+            brand: { 50: '#eef6fc', 100: '#d6e9f7', 200: '#aed3ef', 500: '#2a85cc', 600: '#1a70b7', 700: '#155a93', 900: '#0c3354' },
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    html { scroll-behavior: smooth; scroll-padding-top: 5rem; }
+    body { background: #f6f5f5; overflow-x: clip; }
+    h1, h2, h3, h4 { font-family: 'Fredoka', 'Inter', system-ui, sans-serif; }
+    pre { position: relative; }
+    pre code { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: .8125rem; line-height: 1.6; }
+    .toc-link.active { color: #155a93; background: #eef6fc; font-weight: 600; }
+    .tab-btn[aria-selected="true"] { background: #fff; color: #155a93; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+    .step-dot[aria-current="true"] { background: #1a70b7; color: #fff; border-color: #1a70b7; }
+    .actor.on { border-color: #2a85cc; background: #eef6fc; box-shadow: 0 0 0 4px #d6e9f7; }
+    .prose-p p + p { margin-top: .75rem; }
+    kbd, .inline-code { font-family: 'JetBrains Mono', monospace; font-size: .8em; background: #eef1f4; border: 1px solid #dde3ea; border-radius: .375rem; padding: .05rem .35rem; color: #0f172a; overflow-wrap: anywhere; }
+    td code, p code, li code { overflow-wrap: anywhere; }
+    .card { background: #fff; border: 1px solid #e8e8e8; border-radius: .75rem; }
+    .c { color: #94a3b8; }
+  </style>
+</head>
+<body class="font-sans text-slate-700 antialiased">
+  <div id="progress" class="fixed top-0 left-0 h-1 bg-brand-600 z-50 transition-all" style="width:0"></div>
+
+  <header class="sticky top-0 z-40 bg-white/90 backdrop-blur border-b border-slate-200">
+    <div class="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
+      <a href="#inicio" class="flex items-center gap-2.5 font-display font-semibold text-lg text-slate-900">
+        <span class="w-8 h-8 rounded-lg bg-brand-600 text-white grid place-items-center text-sm">P</span>
+        Puzl Account SDK
+        <span class="hidden sm:inline font-sans text-xs font-medium text-slate-500 border border-slate-200 rounded-full px-2 py-0.5 ml-1">Node.js · NestJS</span>
+      </a>
+      <button id="menuBtn" class="lg:hidden text-sm font-medium border border-slate-300 rounded-lg px-3 py-1.5" aria-expanded="false" aria-controls="toc">Sumário</button>
+    </div>
+  </header>
+
+  <div class="max-w-7xl mx-auto px-4 lg:grid lg:grid-cols-[260px_1fr] lg:gap-10">
+    <aside id="toc" class="hidden lg:block fixed lg:sticky inset-x-0 top-14 lg:top-20 z-30 lg:z-auto bg-white lg:bg-transparent border-b lg:border-0 border-slate-200 max-h-[70vh] lg:max-h-none lg:h-[calc(100vh-6rem)] overflow-y-auto p-4 lg:p-0">
+      <nav class="text-sm">
+        <p class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2 px-3">Sumário</p>
+        <ul id="tocList" class="space-y-0.5"></ul>
+        <div class="mt-6 mx-3 p-3 rounded-lg bg-white border border-slate-200 text-xs text-slate-500">
+          Leitura estimada: <strong class="text-slate-700">15 min</strong>.<br>
+          Primeira vez? Leia de 1 a 5 em ordem. Depois use como consulta.
+        </div>
+      </nav>
+    </aside>
+
+    <main class="py-10 max-w-3xl min-w-0">
+
+      <!-- ============================================================ -->
+      <section id="inicio" data-toc="Começo" class="mb-16">
+        <p class="text-sm font-semibold text-brand-600 mb-2">Leia isto primeiro</p>
+        <h1 class="text-3xl sm:text-4xl font-bold text-slate-900 leading-tight">
+          O Puzl Account a um <span class="text-brand-600">npm install</span> de distância
+        </h1>
+        <p class="mt-4 text-lg text-slate-600">
+          O <span class="inline-code">@puzl/account-sdk</span> liga a sua API Node.js ou NestJS ao Puzl Account, o “Entrar com a Puzl”.
+          É o mesmo SDK que os produtos Laravel já usam, agora em TypeScript, e funciona com <code>import</code> ou <code>require</code>.
+        </p>
+
+        <div class="mt-6 grid sm:grid-cols-3 gap-3 text-sm">
+          <div class="card p-4"><p class="text-2xl">🔐</p><p class="font-semibold text-slate-900 mt-1">Login</p><p class="mt-1">Fluxo OIDC com PKCE, tokens, refresh e validação do <code>id_token</code>.</p></div>
+          <div class="card p-4"><p class="text-2xl">👤</p><p class="font-semibold text-slate-900 mt-1">API da conta</p><p class="mt-1">Perfil, senha, e-mail, foto, MFA e apps com acesso.</p></div>
+          <div class="card p-4"><p class="text-2xl">📬</p><p class="font-semibold text-slate-900 mt-1">Webhooks</p><p class="mt-1">Verifica os eventos que o Puzl Account manda para a sua API.</p></div>
+        </div>
+
+        <div class="mt-6 rounded-xl border-l-4 border-brand-600 bg-brand-50 p-4">
+          <p class="font-semibold text-brand-900">Resumo em uma frase</p>
+          <p class="mt-1 text-slate-700">
+            Você cria <strong>um</strong> client, chama métodos <code>async</code> e confere <code>has_error</code> no retorno.
+            O SDK não lança exceção quando o Puzl Account falha, então não precisa de <code>try/catch</code> em volta de cada chamada.
+          </p>
+        </div>
+
+        <div class="mt-4 card p-4 text-sm">
+          <p class="font-semibold text-slate-900">Atalhos</p>
+          <p class="mt-1">
+            <a class="text-brand-700 underline" href="#instalar">Instalar</a> ·
+            <a class="text-brand-700 underline" href="#rapido">Início rápido</a> ·
+            <a class="text-brand-700 underline" href="#login">Login</a> ·
+            <a class="text-brand-700 underline" href="#erros">Erros</a> ·
+            <a class="text-brand-700 underline" href="#testes">Testes</a> ·
+            <a class="text-brand-700 underline" href="#versoes">Versões</a>
+          </p>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="oque" data-toc="1. O que é" class="mb-16">
+        <h2 class="text-2xl font-bold text-slate-900 mb-2"><span class="text-brand-600">1.</span> O que é</h2>
+        <p class="mb-5 text-slate-600">É um pacote npm que fala com o Puzl Account por você. Ele resolve três coisas que dão trabalho fazer na mão: montar o login OIDC direito, validar tokens com segurança e conversar com a API da conta.</p>
+
+        <h3 class="text-lg font-semibold text-slate-900 mt-8 mb-3">1.1 Onde funciona</h3>
+        <div class="grid sm:grid-cols-2 gap-3 text-sm">
+          <div class="card p-4"><strong class="text-slate-900">Node.js puro.</strong> Express, Fastify, Koa, o que for. Basta criar o client.</div>
+          <div class="card p-4"><strong class="text-slate-900">NestJS.</strong> Tem módulo pronto (<code>PzAccountSdkModule</code>) com injeção pela classe.</div>
+          <div class="card p-4"><strong class="text-slate-900">TypeScript.</strong> Tipos completos, para qualquer <code>moduleResolution</code>.</div>
+          <div class="card p-4"><strong class="text-slate-900">JavaScript puro.</strong> <code>require()</code> ou <code>import</code>; não precisa ter TypeScript instalado.</div>
+        </div>
+        <p class="text-xs text-slate-500 mt-2">Node.js 18.17 ou mais novo. Zero dependências de runtime.</p>
+
+        <h3 class="text-lg font-semibold text-slate-900 mt-8 mb-3">1.2 O que ele não faz</h3>
+        <ul class="text-sm space-y-1 list-disc list-inside">
+          <li><strong>Não guarda sessão.</strong> Os tokens são do usuário; quem guarda é a sua API (sessão, banco, Redis).</li>
+          <li><strong>Não tenta de novo.</strong> Sem retry automático: quem decide a política é o produto.</li>
+          <li><strong>Não roda no navegador.</strong> Ele carrega o <code>client_secret</code>, então é só para o backend.</li>
+        </ul>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="instalar" data-toc="2. Instalar" class="mb-16">
+        <h2 class="text-2xl font-bold text-slate-900 mb-2"><span class="text-brand-600">2.</span> Instalar</h2>
+        <p class="mb-5 text-slate-600">O pacote vem direto do GitHub, pela tag de versão. Não há publicação no npmjs.com. Funciona igual ao <code>composer require</code> dos projetos Laravel.</p>
+
+        <ol class="relative border-l-2 border-brand-100 ml-3 space-y-10">
+          <li class="pl-8 relative">
+            <span class="absolute -left-[17px] top-0 w-8 h-8 rounded-full bg-brand-600 text-white grid place-items-center text-sm font-bold">1</span>
+            <h3 class="font-semibold text-slate-900 text-lg">Tenha acesso ao repositório</h3>
+            <p class="text-sm mt-1">O repositório é privado. Sua máquina precisa conseguir clonar <span class="inline-code">PuzlPlace/puzl-account-sdk-node</span>, por chave SSH ou token do GitHub. Teste com:</p>
+            <pre class="mt-3 bg-slate-900 text-slate-100 rounded-xl p-4 overflow-x-auto"><code>git ls-remote git@github.com:PuzlPlace/puzl-account-sdk-node.git</code></pre>
+          </li>
+          <li class="pl-8 relative">
+            <span class="absolute -left-[17px] top-0 w-8 h-8 rounded-full bg-brand-600 text-white grid place-items-center text-sm font-bold">2</span>
+            <h3 class="font-semibold text-slate-900 text-lg">Instale uma vez</h3>
+            <pre class="mt-3 bg-slate-900 text-slate-100 rounded-xl p-4 overflow-x-auto"><code>npm install github:PuzlPlace/puzl-account-sdk-node#semver:^1.0.0</code></pre>
+            <p class="text-sm mt-2">O <code>#semver:^1.0.0</code> funciona como o <code>^1.0</code> do Composer: aceita qualquer <code>1.x.y</code> e nunca pula para <code>2.0.0</code> sozinho.</p>
+          </li>
+          <li class="pl-8 relative">
+            <span class="absolute -left-[17px] top-0 w-8 h-8 rounded-full bg-brand-600 text-white grid place-items-center text-sm font-bold">3</span>
+            <h3 class="font-semibold text-slate-900 text-lg">Commite o <code>package.json</code> e o <code>package-lock.json</code></h3>
+            <p class="text-sm mt-1">A dependência fica gravada assim:</p>
+            <pre class="mt-3 bg-slate-900 text-slate-100 rounded-xl p-4 overflow-x-auto"><code>"dependencies": {
+  "@puzl/account-sdk": "github:PuzlPlace/puzl-account-sdk-node#semver:^1.0.0"
+}</code></pre>
+            <p class="text-sm mt-2">Daí em diante, quem clonar o projeto roda só <code>npm install</code>. O lock fixa a versão exata, então todo mundo usa a mesma.</p>
+          </li>
+        </ol>
+
+        <h3 class="text-lg font-semibold text-slate-900 mt-10 mb-3">2.1 Acesso fora da sua máquina</h3>
+        <p class="text-sm mb-3">O CI e o build do Docker também clonam o repositório. Escolha um jeito de dar acesso:</p>
+        <div class="mt-3" data-tabs>
+          <div class="inline-flex p-1 rounded-lg bg-slate-100 gap-1 text-sm flex-wrap" role="tablist">
+            <button class="tab-btn px-3 py-1.5 rounded-md font-medium text-slate-600" role="tab" data-tab="ssh">SSH</button>
+            <button class="tab-btn px-3 py-1.5 rounded-md font-medium text-slate-600" role="tab" data-tab="token">Token HTTPS</button>
+            <button class="tab-btn px-3 py-1.5 rounded-md font-medium text-slate-600" role="tab" data-tab="docker">Docker</button>
+            <button class="tab-btn px-3 py-1.5 rounded-md font-medium text-slate-600" role="tab" data-tab="ci">GitHub Actions</button>
+          </div>
+          <div data-panel="ssh" class="mt-3">
+            <p class="text-xs text-slate-500 mb-2">Bom para máquinas de dev que já têm chave SSH no GitHub.</p>
+            <pre class="bg-slate-900 text-slate-100 rounded-xl p-4 overflow-x-auto"><code>npm install git+ssh://git@github.com/PuzlPlace/puzl-account-sdk-node.git#semver:^1.0.0</code></pre>
+          </div>
+          <div data-panel="token" class="mt-3 hidden">
+            <p class="text-xs text-slate-500 mb-2">Um token com leitura do repositório. Configure uma vez por máquina; o <code>package.json</code> continua sem segredo.</p>
+            <pre class="bg-slate-900 text-slate-100 rounded-xl p-4 overflow-x-auto"><code>git config --global url."https://${GITHUB_TOKEN}@github.com/".insteadOf "https://github.com/"</code></pre>
+          </div>
+          <div data-panel="docker" class="mt-3 hidden">
+            <p class="text-xs text-slate-500 mb-2">Passe o token como <em>secret</em> do build. Assim ele não fica gravado em nenhuma camada da imagem.</p>
+            <pre class="bg-slate-900 text-slate-100 rounded-xl p-4 overflow-x-auto"><code><span class="c"># Dockerfile</span>
+RUN --mount=type=secret,id=gh_token \
+    git config --global url."https://$(cat /run/secrets/gh_token)@github.com/".insteadOf "https://github.com/" \
+ && npm ci \
+ && git config --global --unset url."https://$(cat /run/secrets/gh_token)@github.com/".insteadOf
+
+<span class="c"># build</span>
+docker build --secret id=gh_token,env=GITHUB_TOKEN .</code></pre>
+          </div>
+          <div data-panel="ci" class="mt-3 hidden">
+            <p class="text-xs text-slate-500 mb-2">O <code>GITHUB_TOKEN</code> do job só enxerga o próprio repositório. Use um token (PAT ou GitHub App) com leitura deste repo, guardado em um secret.</p>
+            <pre class="bg-slate-900 text-slate-100 rounded-xl p-4 overflow-x-auto"><code>- run: git config --global url."https://${{ secrets.PUZL_SDK_TOKEN }}@github.com/".insteadOf "https://github.com/"
+- run: npm ci</code></pre>
+          </div>
+        </div>
+
+        <div class="mt-6 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm">
+          <p class="font-semibold text-amber-900">⚠️ Nunca coloque o token no <code>package.json</code></p>
+          <p class="mt-1 text-amber-900/90">Uma URL como <code>https://ghp_xxx@github.com/...</code> vai para o Git e para o lock. Use SSH ou o <code>insteadOf</code> acima.</p>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="config" data-toc="3. Configurar" class="mb-16">
+        <h2 class="text-2xl font-bold text-slate-900 mb-2"><span class="text-brand-600">3.</span> Configurar</h2>
+        <p class="mb-5 text-slate-600">Peça ao time do Puzl Account o cadastro do seu app (client). Você recebe <code>client_id</code> e <code>client_secret</code>. Coloque tudo no <code>.env</code>:</p>
+
+        <pre class="bg-slate-900 text-slate-100 rounded-xl p-4 overflow-x-auto"><code>PUZL_ACCOUNT_ISSUER=https://accounts.exemplo.test
+PUZL_ACCOUNT_CLIENT_ID=meu-produto
+PUZL_ACCOUNT_CLIENT_SECRET=***
+PUZL_ACCOUNT_REDIRECT_URI=https://api.meu-produto.test/auth/callback</code></pre>
+
+        <div class="overflow-x-auto card mt-4">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-left text-slate-500"><tr><th class="p-3">Variável</th><th class="p-3">Padrão</th><th class="p-3">Para quê</th></tr></thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr><td class="p-3 font-mono text-xs">PUZL_ACCOUNT_ISSUER</td><td class="p-3">—</td><td class="p-3">URL do Puzl Account, sem barra no final. Precisa bater com o <code>iss</code> dos tokens.</td></tr>
+              <tr><td class="p-3 font-mono text-xs">PUZL_ACCOUNT_CLIENT_ID</td><td class="p-3">—</td><td class="p-3">Identificador do seu app.</td></tr>
+              <tr><td class="p-3 font-mono text-xs">PUZL_ACCOUNT_CLIENT_SECRET</td><td class="p-3">—</td><td class="p-3">Senha do seu app. Só fica no servidor.</td></tr>
+              <tr><td class="p-3 font-mono text-xs">PUZL_ACCOUNT_REDIRECT_URI</td><td class="p-3">—</td><td class="p-3">Para onde o login volta. Precisa estar cadastrada no client.</td></tr>
+              <tr><td class="p-3 font-mono text-xs">PUZL_ACCOUNT_SCOPE</td><td class="p-3 font-mono text-xs">openid email profile</td><td class="p-3">Adicione <code>offline_access</code> para receber refresh token.</td></tr>
+              <tr><td class="p-3 font-mono text-xs">PUZL_ACCOUNT_TOKEN_AUTH_METHOD</td><td class="p-3 font-mono text-xs">client_secret_post</td><td class="p-3">Ou <code>client_secret_basic</code>, ou <code>none</code>. Igual ao cadastrado.</td></tr>
+              <tr><td class="p-3 font-mono text-xs">PUZL_ACCOUNT_TIMEOUT</td><td class="p-3">10</td><td class="p-3">Segundos por requisição.</td></tr>
+              <tr><td class="p-3 font-mono text-xs">PUZL_ACCOUNT_JWKS_CACHE_TTL</td><td class="p-3">3600</td><td class="p-3">Segundos que as chaves públicas ficam em cache.</td></tr>
+              <tr><td class="p-3 font-mono text-xs">PUZL_ACCOUNT_LEEWAY</td><td class="p-3">60</td><td class="p-3">Tolerância de relógio, em segundos, na validade dos tokens.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-xs text-slate-500 mt-2">Cada variável tem uma opção equivalente em camelCase (<code>issuer</code>, <code>clientId</code>, <code>clientSecret</code>…), para quem prefere passar a configuração no código.</p>
+
+        <div class="mt-5 rounded-xl border-l-4 border-emerald-500 bg-emerald-50 p-4 text-sm">
+          <p class="font-semibold text-emerald-900">A API sobe mesmo sem configuração</p>
+          <p class="mt-1 text-emerald-900/90">A configuração só é conferida na primeira chamada. Se faltar algo, a <code>PzAccountSdkConfigurationException</code> diz a variável exata. Para esconder o botão “Entrar com a Puzl” enquanto não está configurado, use <code>puzl.isConfigured()</code>, que nunca lança exceção.</p>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="rapido" data-toc="4. Início rápido" class="mb-16">
+        <h2 class="text-2xl font-bold text-slate-900 mb-2"><span class="text-brand-600">4.</span> Início rápido</h2>
+        <p class="mb-5 text-slate-600">Crie <strong>uma</strong> instância do client para a aplicação inteira e reaproveite. Escolha o seu caso:</p>
+
+        <div data-tabs>
+          <div class="inline-flex p-1 rounded-lg bg-slate-100 gap-1 text-sm flex-wrap" role="tablist">
+            <button class="tab-btn px-3 py-1.5 rounded-md font-medium text-slate-600" role="tab" data-tab="node">Node.js (TypeScript)</button>
+            <button class="tab-btn px-3 py-1.5 rounded-md font-medium text-slate-600" role="tab" data-tab="nest">NestJS</button>
+            <button class="tab-btn px-3 py-1.5 rounded-md font-medium text-slate-600" role="tab" data-tab="js">JavaScript (require)</button>
+          </div>
+          <div data-panel="node" class="mt-3">
+            <pre class="bg-slate-900 text-slate-100 rounded-xl p-4 overflow-x-auto"><code><span class="c">// src/puzl.ts — um client só, para a aplicação toda</span>
+import { PzAccountSdkClientFactory } from '@puzl/account-sdk';
+
+export const puzl = PzAccountSdkClientFactory.fromEnv(); <span class="c">// lê PUZL_ACCOUNT_*</span>
+
+<span class="c">// em qualquer lugar</span>
+const me = await puzl.meShow({ access_token: token });
+if (me.has_error) { <span class="c">/* trate a falha */</span> }
+console.log(me.user?.name);</code></pre>
+          </div>
+          <div data-panel="nest" class="mt-3 hidden">
+            <pre class="bg-slate-900 text-slate-100 rounded-xl p-4 overflow-x-auto"><code><span class="c">// app.module.ts</span>
+import { PzAccountSdkModule } from '@puzl/account-sdk/nestjs';
+
+@Module({
+  imports: [PzAccountSdkModule.forRoot({ isGlobal: true })], <span class="c">// lê PUZL_ACCOUNT_*</span>
+})
+export class AppModule {}
+
+<span class="c">// auth.service.ts — injeta pela própria classe</span>
+import { PzAccountSdkClient } from '@puzl/account-sdk';
+
+@Injectable()
+export class AuthService {
+  constructor(private readonly puzl: PzAccountSdkClient) {}
+}</code></pre>
+            <p class="text-xs text-slate-500 mt-2">Prefere o <code>ConfigService</code>? Use <code>forRootAsync</code>:</p>
+            <pre class="mt-2 bg-slate-900 text-slate-100 rounded-xl p-4 overflow-x-auto"><code>PzAccountSdkModule.forRootAsync({
+  isGlobal: true,
+  inject: [ConfigService],
+  useFactory: (config: ConfigService) => ({
+    issuer: config.getOrThrow('PUZL_ACCOUNT_ISSUER'),
+    clientId: config.getOrThrow('PUZL_ACCOUNT_CLIENT_ID'),
+    clientSecret: config.getOrThrow('PUZL_ACCOUNT_CLIENT_SECRET'),
+  }),
+});</code></pre>
+          </div>
+          <div data-panel="js" class="mt-3 hidden">
+            <pre class="bg-slate-900 text-slate-100 rounded-xl p-4 overflow-x-auto"><code>const { PzAccountSdkClient } = require('@puzl/account-sdk');
+
+const puzl = new PzAccountSdkClient({
+  issuer: process.env.PUZL_ACCOUNT_ISSUER,
+  clientId: process.env.PUZL_ACCOUNT_CLIENT_ID,
+  clientSecret: process.env.PUZL_ACCOUNT_CLIENT_SECRET,
+  redirectUri: process.env.PUZL_ACCOUNT_REDIRECT_URI,
+});
+
+module.exports = { puzl };</code></pre>
+          </div>
+        </div>
+
+        <div class="mt-5 rounded-xl border-l-4 border-brand-600 bg-brand-50 p-4 text-sm">
+          <p class="font-semibold text-brand-900">Como chamar qualquer operação</p>
+          <p class="mt-1 text-slate-700">Passe um objeto com os campos em <strong>snake_case</strong>, os mesmos do Puzl Account e do SDK PHP: <code>{ access_token }</code>, <code>{ code, code_verifier }</code>. Se preferir, passe o DTO (<code>new PzAccountSdkTokenRefreshDto({...})</code>). O retorno é sempre um DTO com <code>has_error</code>.</p>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="login" data-toc="5. Login passo a passo" class="mb-16">
+        <h2 class="text-2xl font-bold text-slate-900 mb-2"><span class="text-brand-600">5.</span> Login passo a passo</h2>
+        <p class="mb-5 text-slate-600">O fluxo é o <strong>Authorization Code + PKCE</strong>. Use as setas para ver quem fala com quem.</p>
+
+        <div class="rounded-2xl card p-4 sm:p-6">
+          <div class="grid grid-cols-3 gap-2 sm:gap-4 text-center">
+            <div class="actor rounded-xl border-2 border-slate-200 p-3 transition" data-actor="browser"><p class="text-2xl">🧑‍💻</p><p class="text-xs sm:text-sm font-semibold mt-1">Navegador</p></div>
+            <div class="actor rounded-xl border-2 border-slate-200 p-3 transition" data-actor="app"><p class="text-2xl">🟩</p><p class="text-xs sm:text-sm font-semibold mt-1">Sua API<br><span class="font-normal text-slate-500">(com o SDK)</span></p></div>
+            <div class="actor rounded-xl border-2 border-slate-200 p-3 transition" data-actor="idp"><p class="text-2xl">🔐</p><p class="text-xs sm:text-sm font-semibold mt-1">Puzl Account</p></div>
+          </div>
+          <div class="mt-5 min-h-[170px] rounded-xl bg-slate-50 border border-slate-200 p-4">
+            <p id="stepArrow" class="text-xs font-semibold text-brand-700 uppercase tracking-wide"></p>
+            <p id="stepTitle" class="mt-1 text-lg font-bold text-slate-900"></p>
+            <p id="stepText" class="mt-2 text-sm text-slate-600"></p>
+            <pre id="stepCode" class="mt-3 hidden bg-slate-900 text-slate-100 rounded-lg p-3 overflow-x-auto"><code></code></pre>
+          </div>
+          <div class="mt-4 flex items-center justify-between gap-2">
+            <button id="stepPrev" class="px-3 py-2 rounded-lg border border-slate-300 text-sm font-medium disabled:opacity-40">← Anterior</button>
+            <div id="stepDots" class="flex gap-1.5 flex-wrap justify-center"></div>
+            <button id="stepNext" class="px-3 py-2 rounded-lg bg-brand-600 text-white text-sm font-medium disabled:opacity-40">Próximo →</button>
+          </div>
+        </div>
+
+        <h3 class="text-lg font-semibold text-slate-900 mt-8 mb-3">5.1 O código completo (Express)</h3>
+        <pre class="bg-slate-900 text-slate-100 rounded-xl p-4 overflow-x-auto"><code>import { timingSafeEqual } from 'node:crypto';
+import { puzl } from './puzl.js';
+
+const safeEqual = (a: string, b: string) =>
+  Buffer.byteLength(a) === Buffer.byteLength(b) &amp;&amp; timingSafeEqual(Buffer.from(a), Buffer.from(b));
+
+<span class="c">// 1) Início: gera os segredos, guarda NA SESSÃO e manda para a Puzl.</span>
+app.get('/auth/login', (req, res) => {
+  const pkce = puzl.pkceCreate();
+  req.session.puzlLogin = pkce.toArray();
+  res.redirect(puzl.authorizeUrl({ state: pkce.state, nonce: pkce.nonce, code_challenge: pkce.code_challenge }));
+});
+
+<span class="c">// 2) Callback: confere o state, troca o code e valida o id_token.</span>
+app.get('/auth/callback', async (req, res) => {
+  const login = req.session.puzlLogin;
+  delete req.session.puzlLogin; <span class="c">// uso único</span>
+
+  if (!login || !safeEqual(login.state, String(req.query.state ?? ''))) {
+    return res.sendStatus(400);
+  }
+
+  const tokens = await puzl.tokenExchangeCode({ code: String(req.query.code), code_verifier: login.code_verifier });
+  if (tokens.has_error) return res.redirect('/auth/login'); <span class="c">// code vencido ou já usado</span>
+
+  const identity = await puzl.idTokenVerify({
+    id_token: tokens.id_token,
+    nonce: login.nonce,
+    access_token: tokens.access_token,
+  });
+  if (identity.has_error) return res.sendStatus(identity.isServiceUnavailable() ? 503 : 401);
+
+  <span class="c">// identity.sub é a chave do usuário no seu banco.</span>
+  const user = await users.findOrCreateBySub(identity.sub, { email: identity.email, name: identity.name });
+  <span class="c">// ... cria a sessão da sua API</span>
+});</code></pre>
+
+        <h3 class="text-lg font-semibold text-slate-900 mt-8 mb-3">5.2 Os três segredos do login</h3>
+        <div class="overflow-x-auto card">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-left text-slate-500"><tr><th class="p-3">Campo</th><th class="p-3">Para quê</th><th class="p-3">Onde vive</th></tr></thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr><td class="p-3 font-mono text-xs">state</td><td class="p-3">Garante que o callback é do login que <em>esta</em> sessão começou (contra CSRF).</td><td class="p-3">Sessão. Conferir no callback.</td></tr>
+              <tr><td class="p-3 font-mono text-xs">nonce</td><td class="p-3">Amarra o <code>id_token</code> a esta tentativa.</td><td class="p-3">Sessão. Passar ao <code>idTokenVerify</code>.</td></tr>
+              <tr><td class="p-3 font-mono text-xs">code_verifier</td><td class="p-3">Prova que quem troca o code é quem começou o login (PKCE).</td><td class="p-3">Sessão. Nunca vai ao navegador.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-4 grid sm:grid-cols-2 gap-3 text-sm">
+          <div class="rounded-lg border border-emerald-300 bg-emerald-50 p-3"><p class="font-semibold text-emerald-900">✅ Certo</p><p class="mt-1 font-mono text-xs text-emerald-900">users.findBySub(identity.sub)</p></div>
+          <div class="rounded-lg border border-red-300 bg-red-50 p-3"><p class="font-semibold text-red-900">❌ Errado</p><p class="mt-1 font-mono text-xs text-red-900">users.findByEmail(identity.email)</p></div>
+        </div>
+        <p class="text-xs text-slate-500 mt-2">O e-mail muda; o <code>sub</code> não. Só use o e-mail para vincular uma conta existente quando <code>email_verified</code> for <code>true</code>.</p>
+
+        <h3 class="text-lg font-semibold text-slate-900 mt-8 mb-3">5.3 Variações do fluxo</h3>
+        <ul class="text-sm space-y-2 list-disc list-inside">
+          <li><strong>Popup:</strong> passe <code>redirect_uri</code> e <code>response_mode: 'web_message'</code> ao <code>authorizeUrl</code>.</li>
+          <li><strong>Abrir no cadastro:</strong> <code>prompt: 'create'</code>. <strong>Escolher conta:</strong> <code>prompt: 'select_account'</code>. <strong>Pedir a senha de novo:</strong> <code>prompt: 'login'</code>.</li>
+          <li><strong>Pré-preencher o e-mail:</strong> <code>login_hint: 'ana@exemplo.com'</code>.</li>
+          <li><strong>Sem sessão de navegador</strong> (app mobile): guarde os segredos no cache, por uma chave que só o cliente legítimo tenha. Não use o <code>state</code> como chave, porque ele viaja na URL.</li>
+        </ul>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="tokens" data-toc="6. Tokens" class="mb-16">
+        <h2 class="text-2xl font-bold text-slate-900 mb-2"><span class="text-brand-600">6.</span> Tokens</h2>
+        <p class="mb-5 text-slate-600">O que você recebe no <code>tokenExchangeCode</code> e o que fazer com cada um.</p>
+
+        <div class="overflow-x-auto card">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-left text-slate-500"><tr><th class="p-3">Token</th><th class="p-3">O que é</th><th class="p-3">Use para</th></tr></thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr><td class="p-3 font-mono text-xs">id_token</td><td class="p-3">JWT assinado: “esta pessoa é X”.</td><td class="p-3">Passe <strong>sempre</strong> pelo <code>idTokenVerify</code> antes de confiar.</td></tr>
+              <tr><td class="p-3 font-mono text-xs">access_token</td><td class="p-3">Opaco (não dá para ler). Vale cerca de 1 h.</td><td class="p-3">Chamar <code>userInfoShow</code> e a API da conta (<code>me*</code>).</td></tr>
+              <tr><td class="p-3 font-mono text-xs">refresh_token</td><td class="p-3">Só vem com o escopo <code>offline_access</code>.</td><td class="p-3">Renovar com <code>tokenRefresh</code>. <strong>Gira a cada uso.</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <pre class="mt-4 bg-slate-900 text-slate-100 rounded-xl p-4 overflow-x-auto"><code><span class="c">// O access token ainda vale? (401 invalid_token = vencido ou revogado)</span>
+const info = await puzl.userInfoShow({ access_token });
+
+<span class="c">// Renovar: guarde SEMPRE o refresh_token novo. Reusar o antigo derruba a família inteira.</span>
+const renewed = await puzl.tokenRefresh({ refresh_token });
+
+<span class="c">// Logout de verdade: revoga o refresh (derruba os access tokens dele também).</span>
+await puzl.tokenRevoke({ token: refresh_token, token_type_hint: 'refresh_token' });
+
+<span class="c">// Login com e-mail e senha digitados no seu app (precisa de client habilitado).</span>
+import { PzAccountSdkIdTokenVerifyDto } from '@puzl/account-sdk';
+
+const tokens = await puzl.tokenPassword({ username: email, password });
+const identity = await puzl.idTokenVerify(PzAccountSdkIdTokenVerifyDto.forPasswordGrant(tokens.id_token, tokens.access_token));</code></pre>
+
+        <div class="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm">
+          <p class="font-semibold text-amber-900">⚠️ Password grant e MFA</p>
+          <p class="mt-1 text-amber-900/90">No <code>tokenPassword</code>, senha errada e conta com MFA chegam iguais, como <code>invalid_grant</code>. Se o usuário tem MFA, mande-o para o fluxo de redirect (seção 5).</p>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="logout" data-toc="7. Logout e telas da conta" class="mb-16">
+        <h2 class="text-2xl font-bold text-slate-900 mb-2"><span class="text-brand-600">7.</span> Logout e telas da conta</h2>
+        <p class="mb-5 text-slate-600">Ambos só montam uma URL, sem chamada de rede. Mande o navegador para ela.</p>
+        <pre class="bg-slate-900 text-slate-100 rounded-xl p-4 overflow-x-auto"><code>import { PzAccountSdkAccountPageEnum } from '@puzl/account-sdk';
+
+<span class="c">// Encerra a sessão na Puzl e volta para o seu app.</span>
+res.redirect(puzl.logoutUrl({ id_token_hint: idToken, post_logout_redirect_uri: 'https://app.test/logged-out' }));
+
+<span class="c">// Leva o usuário à tela de trocar senha na Puzl.</span>
+res.redirect(puzl.accountUrl(PzAccountSdkAccountPageEnum.PASSWORD));</code></pre>
+        <p class="text-sm mt-3">Telas disponíveis: <code>HOME</code>, <code>PROFILE</code>, <code>PICTURE</code>, <code>PASSWORD</code>, <code>LOGIN_METHODS</code>, <code>MFA_ENROLL</code> e <code>DELETE</code>.</p>
+        <p class="text-xs text-slate-500 mt-2">O <code>logoutUrl</code> encerra a sessão no provedor, mas não revoga tokens já emitidos. Para isso, use o <code>tokenRevoke</code>.</p>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="conta" data-toc="8. API da conta" class="mb-16">
+        <h2 class="text-2xl font-bold text-slate-900 mb-2"><span class="text-brand-600">8.</span> API da conta</h2>
+        <p class="mb-5 text-slate-600">Operações sobre a conta do usuário, sempre com o <code>access_token</code> dele. Quase todas exigem um app <strong>first-party</strong> (produto da Puzl); fora disso, retornam <code>FORBIDDEN</code>.</p>
+
+        <div class="overflow-x-auto card">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-left text-slate-500"><tr><th class="p-3">Método</th><th class="p-3">Endereço</th><th class="p-3">O que faz</th></tr></thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr><td class="p-3 font-mono text-xs">userRegister</td><td class="p-3 font-mono text-xs">POST /api/identity/users</td><td class="p-3">Cria conta (público, sem token). Não loga.</td></tr>
+              <tr><td class="p-3 font-mono text-xs">meShow</td><td class="p-3 font-mono text-xs">GET /api/identity/me</td><td class="p-3">Conta do dono do token.</td></tr>
+              <tr><td class="p-3 font-mono text-xs">meUpdate</td><td class="p-3 font-mono text-xs">PUT /api/identity/me</td><td class="p-3">Atualiza o perfil. <strong>PUT completo.</strong></td></tr>
+              <tr><td class="p-3 font-mono text-xs">mePasswordChange</td><td class="p-3 font-mono text-xs">PUT …/me/password</td><td class="p-3">Troca a senha (revoga os tokens).</td></tr>
+              <tr><td class="p-3 font-mono text-xs">meEmailChange</td><td class="p-3 font-mono text-xs">POST …/me/email</td><td class="p-3">Pede troca de e-mail; confirmada pelo e-mail antigo (202).</td></tr>
+              <tr><td class="p-3 font-mono text-xs">mePictureUpload · mePicturePresetSet · mePictureDelete</td><td class="p-3 font-mono text-xs">…/me/picture*</td><td class="p-3">Foto da conta.</td></tr>
+              <tr><td class="p-3 font-mono text-xs">meMfaShow · meMfaEnroll · meMfaEnrollConfirm · meMfaDisable · meMfaRecoveryCodesRegenerate</td><td class="p-3 font-mono text-xs">…/me/mfa*</td><td class="p-3">Autenticação em dois fatores (TOTP).</td></tr>
+              <tr><td class="p-3 font-mono text-xs">meConsentList · meConsentRevoke</td><td class="p-3 font-mono text-xs">…/me/consents*</td><td class="p-3">Apps com acesso à conta.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="text-lg font-semibold text-slate-900 mt-8 mb-3">8.1 Editar o perfil sem apagar nada</h3>
+        <p class="text-sm mb-3">O <code>meUpdate</code> substitui o perfil inteiro: campo opcional vazio <strong>apaga</strong> o valor na conta. Parta sempre da conta atual:</p>
+        <pre class="bg-slate-900 text-slate-100 rounded-xl p-4 overflow-x-auto"><code>import { PzAccountSdkMeUpdateDto } from '@puzl/account-sdk';
+
+const me = await puzl.meShow({ access_token });
+if (me.has_error || me.user === null) { <span class="c">/* trate a falha */</span> }
+
+const result = await puzl.meUpdate(PzAccountSdkMeUpdateDto.fromUser(access_token, me.user, { name: 'Ana Maria' }));</code></pre>
+
+        <h3 class="text-lg font-semibold text-slate-900 mt-8 mb-3">8.2 Foto</h3>
+        <pre class="bg-slate-900 text-slate-100 rounded-xl p-4 overflow-x-auto"><code><span class="c">// Upload vindo do multer (memoryStorage): a extensão do nome define o tipo.</span>
+await puzl.mePictureUpload({ access_token, contents: req.file.buffer, filename: req.file.originalname });
+
+<span class="c">// Ou de um arquivo em disco.</span>
+await puzl.mePictureUpload(PzAccountSdkMePictureUploadDto.fromPath(access_token, '/tmp/foto.png'));
+
+<span class="c">// Ou uma ilustração pronta.</span>
+await puzl.mePicturePresetSet({ access_token, preset: 'rocket' });</code></pre>
+        <p class="text-xs text-slate-500 mt-2">Aceita jpg, png ou webp, até 5 MB. O nome do arquivo é limpo pelo SDK antes de ir para a requisição.</p>
+
+        <h3 class="text-lg font-semibold text-slate-900 mt-8 mb-3">8.3 Ligar o MFA</h3>
+        <ol class="text-sm space-y-2 list-decimal list-inside">
+          <li><code>meMfaEnroll({ access_token, current_password })</code> devolve <code>secret</code>, <code>otpauth_uri</code> e <code>qr_svg</code>. Mostre o QR code.</li>
+          <li>O usuário digita o código do app autenticador: <code>meMfaEnrollConfirm({ access_token, code })</code>.</li>
+          <li>A resposta traz <code>recovery_codes</code>. Mostre <strong>uma vez</strong> e não guarde.</li>
+        </ol>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="webhooks" data-toc="9. Webhooks" class="mb-16">
+        <h2 class="text-2xl font-bold text-slate-900 mb-2"><span class="text-brand-600">9.</span> Webhooks</h2>
+        <p class="mb-5 text-slate-600">O Puzl Account avisa a sua API quando algo muda na conta. O corpo do POST é um token assinado (<code>application/secevent+jwt</code>); o SDK confere a assinatura e devolve o evento.</p>
+        <pre class="bg-slate-900 text-slate-100 rounded-xl p-4 overflow-x-auto"><code>import { PzAccountSdkWebhookEventTypeEnum as Event } from '@puzl/account-sdk';
+
+<span class="c">// O corpo precisa chegar CRU (texto), não como JSON.</span>
+app.post('/webhooks/puzl', express.text({ type: 'application/secevent+jwt' }), async (req, res) => {
+  const event = await puzl.webhookEventVerify({ token: req.body });
+
+  if (event.has_error) return res.sendStatus(event.isServiceUnavailable() ? 503 : 401);
+
+  <span class="c">// event.txn se repete nas reentregas: use como chave de idempotência.</span>
+  switch (event.getEventType()) {
+    case Event.TOKENS_REVOKED:
+    case Event.ACCOUNT_DISABLED: <span class="c">/* derrubar as sessões de event.sub */</span> break;
+    case Event.ACCOUNT_DELETED:
+    case Event.CONSENT_REVOKED:  <span class="c">/* desvincular event.sub */</span> break;
+    case Event.EMAIL_CHANGED:    <span class="c">/* atualizar para event.data.email */</span> break;
+    default: <span class="c">// evento novo: responda 2xx e ignore</span>
+  }
+
+  res.sendStatus(202);
+});</code></pre>
+        <p class="text-xs text-slate-500 mt-2">No NestJS (Express), registre o parser do tipo do webhook no <code>main.ts</code> e leia o texto em <code>req.body</code>:</p>
+        <pre class="mt-2 bg-slate-900 text-slate-100 rounded-xl p-4 overflow-x-auto"><code>const app = await NestFactory.create&lt;NestExpressApplication&gt;(AppModule);
+app.useBodyParser('text', { type: 'application/secevent+jwt' });
+
+<span class="c">// no controller</span>
+@Post('webhooks/puzl')
+async webhook(@Body() token: string) {
+  const event = await this.puzl.webhookEventVerify({ token });
+  <span class="c">// ...</span>
+}</code></pre>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="erros" data-toc="10. Tratamento de erro" class="mb-16">
+        <h2 class="text-2xl font-bold text-slate-900 mb-2"><span class="text-brand-600">10.</span> Tratamento de erro</h2>
+        <p class="mb-5 text-slate-600">Falha do Puzl Account <strong>não vira exceção</strong>: vem no retorno. Todo retorno tem estes campos:</p>
+
+        <div class="overflow-x-auto card">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-left text-slate-500"><tr><th class="p-3">Campo / método</th><th class="p-3">O que diz</th></tr></thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr><td class="p-3 font-mono text-xs">has_error</td><td class="p-3"><code>true</code> se deu errado. É o primeiro que você olha.</td></tr>
+              <tr><td class="p-3 font-mono text-xs">error_code</td><td class="p-3">Código estável, para ramificar (veja abaixo).</td></tr>
+              <tr><td class="p-3 font-mono text-xs">error_message</td><td class="p-3">Texto traduzido. Bom para log; pode mudar sem aviso.</td></tr>
+              <tr><td class="p-3 font-mono text-xs">errors</td><td class="p-3">Erros por campo num 422: <code>{ email: ['inválido'] }</code>.</td></tr>
+              <tr><td class="p-3 font-mono text-xs">http_status</td><td class="p-3">Status HTTP da resposta.</td></tr>
+              <tr><td class="p-3 font-mono text-xs">getErrorCode()</td><td class="p-3">O código como enum, ou <code>null</code> se for desconhecido.</td></tr>
+              <tr><td class="p-3 font-mono text-xs">isServiceUnavailable()</td><td class="p-3">Timeout, falha de conexão ou 5xx.</td></tr>
+              <tr><td class="p-3 font-mono text-xs">isRateLimited()</td><td class="p-3">429: espere e tente depois.</td></tr>
+              <tr><td class="p-3 font-mono text-xs">firstFieldError()</td><td class="p-3">A primeira mensagem de campo, para mostrar ao usuário.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="text-lg font-semibold text-slate-900 mt-8 mb-3">10.1 Ramificando</h3>
+        <pre class="bg-slate-900 text-slate-100 rounded-xl p-4 overflow-x-auto"><code>import { PzAccountSdkErrorCodeEnum as Code } from '@puzl/account-sdk';
+
+const result = await puzl.mePasswordChange({ access_token, current_password, password });
+
+if (result.has_error) {
+  if (result.isServiceUnavailable() || result.isRateLimited()) throw new ServiceUnavailableException();
+
+  switch (result.getErrorCode()) {
+    case Code.INVALID_CURRENT_PASSWORD: return { field: 'current_password', message: 'Senha atual incorreta.' };
+    case Code.VALIDATION_ERROR:         return { message: result.firstFieldError() };
+    default:                            throw new InternalServerErrorException(result.error_message); <span class="c">// sempre tenha um default</span>
+  }
+}</code></pre>
+
+        <h3 class="text-lg font-semibold text-slate-900 mt-8 mb-3">10.2 De onde vem o código</h3>
+        <div class="grid sm:grid-cols-3 gap-3 text-sm">
+          <div class="card p-4"><p class="font-semibold text-slate-900">API da conta</p><p class="mt-1">Maiúsculas: <code>EMAIL_ALREADY_EXISTS</code>, <code>VALIDATION_ERROR</code>.</p></div>
+          <div class="card p-4"><p class="font-semibold text-slate-900">OAuth (<code>/oauth/*</code>)</p><p class="mt-1">Grafia das RFCs: <code>invalid_grant</code>, <code>invalid_client</code>.</p></div>
+          <div class="card p-4"><p class="font-semibold text-slate-900">O próprio SDK</p><p class="mt-1"><code>ID_TOKEN_INVALID</code>, <code>WEBHOOK_TOKEN_INVALID</code>, <code>JWKS_UNAVAILABLE</code>.</p></div>
+        </div>
+
+        <div class="mt-5 rounded-xl border border-red-300 bg-red-50 p-4 text-sm">
+          <p class="font-semibold text-red-900">Culpa do usuário ou do sistema?</p>
+          <p class="mt-1 text-red-900/90">Use <code>result.getErrorCode()?.isClientFault()</code>. Um <code>invalid_client</code> é erro de configuração do <em>seu app</em>: mostrar “credenciais inválidas” ao usuário derruba quem não tem culpa.</p>
+        </div>
+
+        <h3 class="text-lg font-semibold text-slate-900 mt-8 mb-3">10.3 Quando há exceção</h3>
+        <p class="text-sm">Só em erro de integração, que se corrige no código, nunca em falha do provedor:</p>
+        <ul class="text-sm space-y-1 list-disc list-inside mt-2">
+          <li><code>PzAccountSdkConfigurationException</code>: falta configuração (ex.: <code>PUZL_ACCOUNT_CLIENT_SECRET</code>). A mensagem diz o que corrigir.</li>
+          <li><code>TypeError</code>: uso errado do SDK, como esquecer o <code>nonce</code> no <code>idTokenVerify</code>, preset ou tela que não existe, foto ilegível.</li>
+        </ul>
+        <p class="text-xs text-slate-500 mt-2">Nos métodos <code>async</code>, elas chegam como Promise rejeitada; nos locais (<code>authorizeUrl</code>, <code>accountUrl</code>…), na hora.</p>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="testes" data-toc="11. Testes no seu projeto" class="mb-16">
+        <h2 class="text-2xl font-bold text-slate-900 mb-2"><span class="text-brand-600">11.</span> Testes no seu projeto</h2>
+        <p class="mb-5 text-slate-600">Nos seus testes, troque o client pelo <code>PzAccountSdkClientFake</code>. Nada sai para a rede, e você programa o que cada operação responde.</p>
+
+        <div data-tabs>
+          <div class="inline-flex p-1 rounded-lg bg-slate-100 gap-1 text-sm" role="tablist">
+            <button class="tab-btn px-3 py-1.5 rounded-md font-medium text-slate-600" role="tab" data-tab="fake-node">Jest / Vitest</button>
+            <button class="tab-btn px-3 py-1.5 rounded-md font-medium text-slate-600" role="tab" data-tab="fake-nest">NestJS</button>
+          </div>
+          <div data-panel="fake-node" class="mt-3">
+            <pre class="bg-slate-900 text-slate-100 rounded-xl p-4 overflow-x-auto"><code>import { PzAccountSdkClientFake } from '@puzl/account-sdk/testing';
+
+const puzl = new PzAccountSdkClientFake();
+puzl.respondWithError('tokenPassword', 'invalid_grant', 400);
+puzl.respond('meShow', { user: { sub: '01J...', name: 'Ana' } });
+
+<span class="c">// ... exercita o seu código com `puzl` no lugar do client real ...</span>
+
+expect(puzl.callCount('tokenPassword')).toBe(1);
+expect(puzl.lastInput('tokenPassword')?.username).toBe('ana@e.test'); <span class="c">// já tipado</span></code></pre>
+          </div>
+          <div data-panel="fake-nest" class="mt-3 hidden">
+            <pre class="bg-slate-900 text-slate-100 rounded-xl p-4 overflow-x-auto"><code>import { PzAccountSdkClient } from '@puzl/account-sdk';
+import { PzAccountSdkClientFake } from '@puzl/account-sdk/testing';
+
+const puzl = new PzAccountSdkClientFake();
+const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+  .overrideProvider(PzAccountSdkClient)
+  .useValue(puzl)
+  .compile();</code></pre>
+          </div>
+        </div>
+
+        <ul class="mt-4 text-sm space-y-1 list-disc list-inside">
+          <li>Sem nada programado, toda operação responde sucesso plausível.</li>
+          <li>Respostas programadas formam uma fila; a última se repete.</li>
+          <li><code>respond()</code> aceita o DTO, um objeto com os campos ou uma função (inclusive <code>async</code>) da entrada.</li>
+          <li><code>puzl.configured = false</code> simula a integração desligada.</li>
+          <li>O fake <strong>estende</strong> o <code>PzAccountSdkClient</code>: passe-o direto onde o seu código pede o client.</li>
+        </ul>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="modulos" data-toc="12. import × require × TypeScript" class="mb-16">
+        <h2 class="text-2xl font-bold text-slate-900 mb-2"><span class="text-brand-600">12.</span> import × require × TypeScript</h2>
+        <p class="mb-5 text-slate-600">O pacote é compilado nos dois formatos, cada um com seus tipos. O Node escolhe sozinho o certo. Não há nada para configurar.</p>
+        <div class="overflow-x-auto card">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-left text-slate-500"><tr><th class="p-3">Seu projeto</th><th class="p-3">Recebe</th></tr></thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr><td class="p-3"><code>require('@puzl/account-sdk')</code></td><td class="p-3 font-mono text-xs">dist/index.cjs</td></tr>
+              <tr><td class="p-3"><code>import … from '@puzl/account-sdk'</code></td><td class="p-3 font-mono text-xs">dist/index.js</td></tr>
+              <tr><td class="p-3">TypeScript <code>moduleResolution: node</code> (NestJS clássico)</td><td class="p-3">tipos por <code>types</code> e <code>typesVersions</code></td></tr>
+              <tr><td class="p-3">TypeScript <code>node16</code>, <code>nodenext</code> ou <code>bundler</code></td><td class="p-3">tipos por <code>exports</code> (<code>.d.cts</code> ou <code>.d.ts</code>)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="mt-4 rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm">
+          <p class="font-semibold text-amber-900">⚠️ Use um estilo só no projeto</p>
+          <p class="mt-1 text-amber-900/90">Misturar <code>import</code> e <code>require</code> do SDK no mesmo processo carrega duas cópias dele. Tudo continua funcionando, menos o NestJS, que não reconhece a classe de uma cópia como token da outra.</p>
+        </div>
+        <p class="text-sm mt-4">Três pontos de entrada:</p>
+        <ul class="text-sm space-y-1 list-disc list-inside mt-1">
+          <li><span class="inline-code">@puzl/account-sdk</span>: client, DTOs, enums.</li>
+          <li><span class="inline-code">@puzl/account-sdk/nestjs</span>: <code>PzAccountSdkModule</code>. Só este exige o <code>@nestjs/common</code> instalado.</li>
+          <li><span class="inline-code">@puzl/account-sdk/testing</span>: o fake, para testes.</li>
+        </ul>
+        <div class="mt-5 rounded-xl border-l-4 border-emerald-500 bg-emerald-50 p-4 text-sm">
+          <p class="font-semibold text-emerald-900">Testado de verdade</p>
+          <p class="mt-1 text-emerald-900/90">Antes de virar versão, o CI instala o pacote em projetos reais: <code>require</code> e <code>import</code> em Node 18, 20, 22 e 24; TypeScript node10 e nodenext; apps NestJS 10, 11 e 12.</p>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="versoes" data-toc="13. Versões e atualização" class="mb-16">
+        <h2 class="text-2xl font-bold text-slate-900 mb-2"><span class="text-brand-600">13.</span> Versões e atualização</h2>
+        <p class="mb-5 text-slate-600">As versões seguem o mesmo esquema do SDK PHP: o que chega em <code>production</code> com CI verde vira versão sozinho.</p>
+        <div class="overflow-x-auto card">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-left text-slate-500"><tr><th class="p-3">Branch</th><th class="p-3">O que acontece</th></tr></thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr><td class="p-3 font-mono text-xs">master</td><td class="p-3">Desenvolvimento. Todo push e PR roda os testes.</td></tr>
+              <tr><td class="p-3 font-mono text-xs">production</td><td class="p-3">Merge com CI verde gera a tag <code>vX.Y.Z</code> (patch +1) e a Release no GitHub.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <ul class="mt-4 text-sm space-y-2 list-disc list-inside">
+          <li><strong>Minor ou major:</strong> em <em>Actions → Tests → Run workflow</em>, escolha a branch <code>production</code> e o <code>bump</code>.</li>
+          <li><strong>Atualizar um produto:</strong> <code>npm update @puzl/account-sdk</code>. Isso respeita o <code>^</code>, então não pula de major.</li>
+          <li><strong>Trocar de major:</strong> edite a faixa no <code>package.json</code> (<code>#semver:^2.0.0</code>) e rode <code>npm install</code>.</li>
+          <li><strong>O que mudou:</strong> a página de Releases do repositório tem as notas de cada versão.</li>
+        </ul>
+        <div class="mt-5 rounded-xl border-l-4 border-brand-600 bg-brand-50 p-4 text-sm">
+          <p class="font-semibold text-brand-900">Por que o <code>dist/</code> não está na branch?</p>
+          <p class="mt-1 text-slate-700">O build só existe no commit da tag, que o workflow cria na hora da release — o mesmo pacote que o CI testou, sem scripts nem dependências de desenvolvimento. Por isso o <code>npm install</code> baixa o pacote já compilado e não instala nada além dele, e as branches ficam limpas.</p>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="regras" data-toc="14. Regras de ouro" class="mb-16">
+        <h2 class="text-2xl font-bold text-slate-900 mb-2"><span class="text-brand-600">14.</span> Regras de ouro</h2>
+        <div class="space-y-3">
+          <div class="card p-4 flex gap-4"><span class="text-2xl">🆔</span><div><p class="font-semibold text-slate-900">Identifique a pessoa pelo <code>sub</code>, nunca pelo e-mail</p><p class="text-sm mt-1">O <code>sub</code> é permanente; o e-mail muda.</p></div></div>
+          <div class="card p-4 flex gap-4"><span class="text-2xl">✅</span><div><p class="font-semibold text-slate-900">Confira o <code>has_error</code> de toda chamada</p><p class="text-sm mt-1">O SDK não lança exceção por falha do provedor. Ignorar o retorno é ignorar o erro.</p></div></div>
+          <div class="card p-4 flex gap-4"><span class="text-2xl">🔏</span><div><p class="font-semibold text-slate-900">Nunca confie num <code>id_token</code> sem o <code>idTokenVerify</code></p><p class="text-sm mt-1">E sempre com o <code>nonce</code> da sessão. Decodificar “na mão” não valida a assinatura.</p></div></div>
+          <div class="card p-4 flex gap-4"><span class="text-2xl">🔄</span><div><p class="font-semibold text-slate-900">Guarde sempre o refresh token novo</p><p class="text-sm mt-1">Reusar o antigo é tratado como roubo e derruba todos os tokens daquela sessão.</p></div></div>
+          <div class="card p-4 flex gap-4"><span class="text-2xl">🙈</span><div><p class="font-semibold text-slate-900">Não logue os DTOs de retorno</p><p class="text-sm mt-1">Os de entrada saem mascarados (<code>********</code>). Os de retorno carregam tokens de verdade.</p></div></div>
+          <div class="card p-4 flex gap-4"><span class="text-2xl">1️⃣</span><div><p class="font-semibold text-slate-900">Um client por aplicação</p><p class="text-sm mt-1">Ele guarda em cache as chaves públicas. Criar um por requisição joga o cache fora.</p></div></div>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="faq" data-toc="15. Perguntas frequentes" class="mb-16">
+        <h2 class="text-2xl font-bold text-slate-900 mb-4"><span class="text-brand-600">15.</span> Perguntas frequentes</h2>
+        <div class="space-y-2">
+          <details class="group card p-4"><summary class="font-semibold text-slate-900 cursor-pointer list-none flex justify-between">Tenho vários pods. O cache das chaves funciona?<span class="text-slate-400 group-open:rotate-45 transition">+</span></summary><p class="text-sm mt-2">Funciona: cada pod mantém o próprio cache em memória e busca as chaves uma vez por hora, mesmo com muitos logins ao mesmo tempo. Para dividir entre pods, passe <code>cache</code> com um adaptador de strings:</p><pre class="mt-2 bg-slate-900 text-slate-100 rounded-xl p-4 overflow-x-auto"><code>const puzl = PzAccountSdkClientFactory.fromEnv(process.env, {
+  cache: {
+    get: (key) => redis.get(key),
+    set: (key, value, ttl) => redis.set(key, value, 'EX', ttl),
+    add: async (key, value, ttl) => (await redis.set(key, value, 'EX', ttl, 'NX')) === 'OK',
+  },
+});</code></pre></details>
+          <details class="group card p-4"><summary class="font-semibold text-slate-900 cursor-pointer list-none flex justify-between">Uso proxy ou APM no fetch. Dá para trocar o transporte?<span class="text-slate-400 group-open:rotate-45 transition">+</span></summary><p class="text-sm mt-2">Sim. Passe a opção <code>fetch</code> ao client: uma função que recebe um <code>Request</code> e devolve a <code>Response</code>.</p></details>
+          <details class="group card p-4"><summary class="font-semibold text-slate-900 cursor-pointer list-none flex justify-between">O access token é um JWT? Posso ler?<span class="text-slate-400 group-open:rotate-45 transition">+</span></summary><p class="text-sm mt-2">Não. Ele é opaco. Para saber quem é o usuário ou se o token ainda vale, chame <code>userInfoShow</code> ou <code>meShow</code>.</p></details>
+          <details class="group card p-4"><summary class="font-semibold text-slate-900 cursor-pointer list-none flex justify-between">O <code>error_code</code> veio um que não está no enum. E agora?<span class="text-slate-400 group-open:rotate-45 transition">+</span></summary><p class="text-sm mt-2">É um código novo do provedor. O <code>getErrorCode()</code> devolve <code>null</code> e a string crua fica em <code>error_code</code>. Trate no <code>default</code> como falha genérica. Uma versão nova do SDK vai conhecê-lo.</p></details>
+          <details class="group card p-4"><summary class="font-semibold text-slate-900 cursor-pointer list-none flex justify-between">Existe algum SDK para o frontend?<span class="text-slate-400 group-open:rotate-45 transition">+</span></summary><p class="text-sm mt-2">Este é só para backend, porque carrega o <code>client_secret</code>. O frontend chama a sua API, e ela usa o SDK.</p></details>
+          <details class="group card p-4"><summary class="font-semibold text-slate-900 cursor-pointer list-none flex justify-between">É igual ao SDK do Laravel?<span class="text-slate-400 group-open:rotate-45 transition">+</span></summary><p class="text-sm mt-2">Mesmas operações, mesmos nomes, mesmos campos e mesmos códigos de erro. As diferenças são de linguagem: os métodos são <code>async</code>, as opções de configuração são em camelCase e o fake é instanciado com <code>new</code>.</p></details>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <section id="fim" data-toc="Resumo final" class="mb-10">
+        <div class="rounded-2xl bg-brand-900 text-slate-100 p-6 sm:p-8">
+          <p class="text-sm font-semibold text-brand-200">Se você lembrar de só uma coisa</p>
+          <ol class="mt-4 space-y-3 text-sm sm:text-base">
+            <li><strong class="text-white">1.</strong> Instale com <code class="text-brand-200">npm install github:PuzlPlace/puzl-account-sdk-node#semver:^1.0.0</code> e commite o lock.</li>
+            <li><strong class="text-white">2.</strong> Configure os <code class="text-brand-200">PUZL_ACCOUNT_*</code> e crie <strong class="text-white">um</strong> client (<code class="text-brand-200">fromEnv()</code> ou <code class="text-brand-200">PzAccountSdkModule</code>).</li>
+            <li><strong class="text-white">3.</strong> Login: <code class="text-brand-200">pkceCreate</code> → <code class="text-brand-200">authorizeUrl</code> → <code class="text-brand-200">tokenExchangeCode</code> → <code class="text-brand-200">idTokenVerify</code>.</li>
+            <li><strong class="text-white">4.</strong> Toda chamada: confira <code class="text-brand-200">has_error</code>; identifique a pessoa pelo <code class="text-brand-200">sub</code>.</li>
+            <li><strong class="text-white">5.</strong> Nos testes, use o <code class="text-brand-200">PzAccountSdkClientFake</code>.</li>
+          </ol>
+        </div>
+      </section>
+
+      <footer class="text-xs text-slate-400 border-t border-slate-200 pt-6">
+        Puzl Account SDK Node · documento em <span class="font-mono">docs/index.html</span> · atualizado em 06/10/2026.
+        Mudou o comportamento do SDK? Atualize este guia no mesmo PR.
+      </footer>
+    </main>
+  </div>
+
+  <script>
+    // ---------- Sumário automático com destaque da seção atual ----------
+    const sections = [...document.querySelectorAll('section[data-toc]')];
+    const tocList = document.getElementById('tocList');
+    sections.forEach(s => {
+      const li = document.createElement('li');
+      li.innerHTML = `<a href="#${s.id}" class="toc-link block px-3 py-1.5 rounded-md text-slate-600 hover:text-slate-900 hover:bg-white">${s.dataset.toc}</a>`;
+      tocList.appendChild(li);
+    });
+    const tocLinks = [...tocList.querySelectorAll('a')];
+    const spy = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        tocLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id));
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+    sections.forEach(s => spy.observe(s));
+
+    // Menu no celular
+    const toc = document.getElementById('toc');
+    const menuBtn = document.getElementById('menuBtn');
+    menuBtn.addEventListener('click', () => {
+      const open = toc.classList.toggle('hidden') === false;
+      menuBtn.setAttribute('aria-expanded', String(open));
+    });
+    tocLinks.forEach(a => a.addEventListener('click', () => {
+      if (window.innerWidth < 1024) { toc.classList.add('hidden'); menuBtn.setAttribute('aria-expanded', 'false'); }
+    }));
+
+    // ---------- Barra de progresso ----------
+    const bar = document.getElementById('progress');
+    window.addEventListener('scroll', () => {
+      const h = document.documentElement;
+      bar.style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight) * 100) + '%';
+    }, { passive: true });
+
+    // ---------- Botão copiar nos blocos de código ----------
+    document.querySelectorAll('pre').forEach(pre => {
+      if (pre.id === 'stepCode') return;
+      const btn = document.createElement('button');
+      btn.textContent = 'copiar';
+      btn.className = 'absolute top-2 right-2 text-[11px] px-2 py-1 rounded bg-slate-700 text-slate-200 hover:bg-slate-600';
+      btn.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(pre.querySelector('code').innerText); btn.textContent = 'copiado ✓'; }
+        catch { btn.textContent = 'falhou'; }
+        setTimeout(() => (btn.textContent = 'copiar'), 1500);
+      });
+      pre.appendChild(btn);
+    });
+
+    // ---------- Abas ----------
+    document.querySelectorAll('[data-tabs]').forEach(box => {
+      const btns = box.querySelectorAll('[data-tab]');
+      const show = name => {
+        btns.forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === name)));
+        box.querySelectorAll('[data-panel]').forEach(p => p.classList.toggle('hidden', p.dataset.panel !== name));
+      };
+      btns.forEach(b => b.addEventListener('click', () => show(b.dataset.tab)));
+      show(btns[0].dataset.tab);
+    });
+
+    // ---------- Passo a passo do login ----------
+    const steps = [
+      { from: 'browser', to: 'app', title: 'A pessoa clica em “Entrar com a Puzl”',
+        text: 'O botão leva para uma rota da sua API, por exemplo /auth/login.' },
+      { from: 'app', to: 'browser', title: 'Sua API gera os segredos e redireciona',
+        text: 'puzl.pkceCreate() gera state, nonce e o par PKCE. Guarde os três na sessão e redirecione para puzl.authorizeUrl(...).',
+        code: 'const pkce = puzl.pkceCreate();\nreq.session.puzlLogin = pkce.toArray();\nres.redirect(puzl.authorizeUrl({ state: pkce.state, nonce: pkce.nonce, code_challenge: pkce.code_challenge }));' },
+      { from: 'browser', to: 'idp', title: 'A pessoa faz login na Puzl',
+        text: 'Senha e, se tiver, o código do autenticador. Se ela já estava logada na Puzl, esta etapa é pulada (SSO).' },
+      { from: 'idp', to: 'app', title: 'A Puzl devolve um código para o callback',
+        text: 'O navegador volta para a sua redirect_uri com code e state. Confira se o state é o mesmo que está na sessão.',
+        code: 'GET /auth/callback?code=…&state=…' },
+      { from: 'app', to: 'idp', title: 'Sua API troca o código por tokens',
+        text: 'Chamada servidor-a-servidor, com o code_verifier e o client_secret. O code vale 60 segundos e uma única vez.',
+        code: 'const tokens = await puzl.tokenExchangeCode({ code, code_verifier: login.code_verifier });' },
+      { from: 'app', to: 'app', title: 'Sua API valida o id_token',
+        text: 'O SDK confere a assinatura (JWKS), o emissor, o app, a validade, o nonce e o at_hash. Se passou, identity.sub é a pessoa.',
+        code: 'const identity = await puzl.idTokenVerify({ id_token: tokens.id_token, nonce: login.nonce, access_token: tokens.access_token });' },
+      { from: 'app', to: 'browser', title: 'Sua API cria a sessão dela',
+        text: 'Procure o usuário pelo sub (crie se não existir) e logue a pessoa no seu produto. Pronto.' },
+    ];
+    const names = { browser: 'Navegador', app: 'Sua API', idp: 'Puzl Account' };
+    let cur = 0;
+    const dots = document.getElementById('stepDots');
+    steps.forEach((_, i) => {
+      const b = document.createElement('button');
+      b.className = 'step-dot w-7 h-7 rounded-full border border-slate-300 text-xs font-semibold text-slate-600';
+      b.textContent = i + 1;
+      b.addEventListener('click', () => render(i));
+      dots.appendChild(b);
+    });
+    function render(i) {
+      cur = i;
+      const s = steps[i];
+      const route = s.from === s.to ? names[s.from] : `${names[s.from]} → ${names[s.to]}`;
+      document.getElementById('stepArrow').textContent = `Passo ${i + 1} de ${steps.length} · ${route}`;
+      document.getElementById('stepTitle').textContent = s.title;
+      document.getElementById('stepText').textContent = s.text;
+      const pre = document.getElementById('stepCode');
+      pre.classList.toggle('hidden', !s.code);
+      pre.querySelector('code').textContent = s.code || '';
+      document.querySelectorAll('.actor').forEach(a => a.classList.toggle('on', a.dataset.actor === s.from || a.dataset.actor === s.to));
+      [...dots.children].forEach((d, k) => d.setAttribute('aria-current', String(k === i)));
+      document.getElementById('stepPrev').disabled = i === 0;
+      document.getElementById('stepNext').disabled = i === steps.length - 1;
+    }
+    document.getElementById('stepPrev').addEventListener('click', () => render(Math.max(0, cur - 1)));
+    document.getElementById('stepNext').addEventListener('click', () => render(Math.min(steps.length - 1, cur + 1)));
+    render(0);
+  </script>
+</body>
+</html>

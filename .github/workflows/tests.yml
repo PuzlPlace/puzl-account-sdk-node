@@ -1,0 +1,215 @@
+name: Tests
+
+on:
+  push:
+    branches: [master, production]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: 'Release manual em production: qual parte da versão sobe'
+        type: choice
+        options: [patch, minor, major]
+        default: patch
+
+# Só leitura por padrão; o job de release pede escrita para si.
+permissions:
+  contents: read
+
+jobs:
+  # Fonte: tipos e testes. As ferramentas de desenvolvimento (vitest, tsdown)
+  # exigem Node 22+; a compatibilidade com Node 18/20 é provada no `smoke`,
+  # que roda o pacote JÁ COMPILADO, como o produto o recebe.
+  test:
+    name: Testes (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22', '24']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  # O pacote como sai para o mundo: exports, tipos para cada resolução
+  # (node10, node16 CJS/ESM, bundler) e o .tgz que os consumidores instalam.
+  package:
+    name: Pacote
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm run lint:package
+
+      - name: Empacotar
+        run: npm pack && mv puzl-account-sdk-*.tgz puzl-account-sdk.tgz
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: package
+          path: puzl-account-sdk.tgz
+          retention-days: 7
+
+  # Instala o .tgz em projetos mínimos e usa de verdade: require, import,
+  # TypeScript (node10 e nodenext) e apps NestJS 10, 11 e 12.
+  smoke:
+    name: Consumidor ${{ matrix.scenario }} (Node ${{ matrix.node }}${{ matrix.nest && format(', Nest {0}', matrix.nest) || '' }})
+    needs: package
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['18', '20', '22', '24']
+        scenario: [cjs, esm]
+        include:
+          - { node: '22', scenario: ts-node10 }
+          - { node: '22', scenario: ts-nodenext }
+          - { node: '18', scenario: nest-cjs, nest: '10' }
+          - { node: '20', scenario: nest-cjs, nest: '11' }
+          - { node: '22', scenario: nest-esm, nest: '12' }
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: package
+
+      - name: Rodar o consumidor
+        env:
+          NEST_VERSION: ${{ matrix.nest }}
+        run: scripts/package-smoke.sh puzl-account-sdk.tgz ${{ matrix.scenario }}
+
+  # O caminho real dos produtos: release num repositório Git e
+  # `npm install git+...#semver:^1.0.0`. Confere que nada além do SDK é
+  # instalado (nenhuma devDependency dele) e que require/import funcionam.
+  git-install:
+    name: Instalação via Git (Node ${{ matrix.node }})
+    needs: package
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['18', '22']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: package
+
+      - run: scripts/git-install-smoke.sh puzl-account-sdk.tgz
+
+  # Entrega em production com CI verde vira versão sozinha. A versão nunca é
+  # escrita à mão: nem no commit, nem no package.json — sai da última tag.
+  #
+  # A tag aponta para um commit de release FORA da branch, com o dist/ do
+  # MESMO .tgz que os jobs acima testaram e a versão no package.json: é isso
+  # que o `npm install` via Git baixa. As branches seguem sem build versionado.
+  release:
+    name: Release
+    needs: [test, smoke, git-install]
+    if: github.ref == 'refs/heads/production' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    # Serializa pushes seguidos; dois jobs simultâneos calculariam a mesma tag.
+    concurrency:
+      group: release
+      cancel-in-progress: false
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: package
+          path: ${{ runner.temp }}/package
+
+      # Push em production sobe o patch. Para minor/major, rode o workflow
+      # à mão na branch production (Actions → Tests → Run workflow → bump).
+      # Rodar de novo o mesmo commit não cria outra versão: reaproveita a tag.
+      - id: bump
+        name: Calcular a próxima tag
+        env:
+          BUMP: ${{ github.event.inputs.bump || 'patch' }}
+        run: |
+          for tag in $(git tag -l 'v[0-9]*.[0-9]*.[0-9]*'); do
+            if [ "$(git rev-parse "$tag^{commit}^" 2>/dev/null)" = "$GITHUB_SHA" ]; then
+              echo "Este commit já foi lançado como $tag."
+              echo "tag=$tag" >> "$GITHUB_OUTPUT"
+              echo "exists=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          done
+
+          last=$(git tag -l 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -n1)
+          if [ -z "$last" ]; then
+            next="v1.0.0"
+          else
+            IFS=. read -r maj min pat <<< "${last#v}"
+            case "$BUMP" in
+              major) next="v$((maj + 1)).0.0" ;;
+              minor) next="v$maj.$((min + 1)).0" ;;
+              *)     next="v$maj.$min.$((pat + 1))" ;;
+            esac
+          fi
+          echo "tag=$next" >> "$GITHUB_OUTPUT"
+          echo "exists=false" >> "$GITHUB_OUTPUT"
+
+      - name: Commit de release e tag
+        if: steps.bump.outputs.exists == 'false'
+        env:
+          TAG: ${{ steps.bump.outputs.tag }}
+        run: |
+          scripts/release-commit.sh "$RUNNER_TEMP/package/puzl-account-sdk.tgz" "$TAG"
+          git push origin "$TAG"
+
+      - name: Criar a release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ steps.bump.outputs.tag }}
+        run: |
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "A release $TAG já existe."
+          else
+            gh release create "$TAG" --verify-tag --title "$TAG" --generate-notes
+          fi

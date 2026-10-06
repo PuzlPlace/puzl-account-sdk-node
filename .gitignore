@@ -1,0 +1,47 @@
+# Dependências (instalar com npm ci)
+node_modules/
+
+# Build: não vai para as branches. O job de release compila e grava o dist/
+# só no commit da tag — é dali que o `npm install` via Git o recebe pronto.
+/dist/
+*.tgz
+
+# Cursor / Claude — ambiente local (não versionar)
+.cursor/plans/
+.cursor/rules/local.mdc
+
+# Planejamento e tarefas locais
+plans/
+tasks/
+
+# Testes
+/coverage/
+tests/package/**/node_modules/
+tests/package/**/package-lock.json
+tests/package/**/dist/
+
+# Ambiente local
+.env
+.env.*
+!.env.example
+.npmrc
+
+# IDEs e editores
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Logs e temporários
+*.log
+*.tmp
+*.temp
+.cache/
