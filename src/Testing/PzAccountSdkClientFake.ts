@@ -4,6 +4,7 @@ import type { PzAccountSdkDiscoveryViewDto } from '../Features/DiscoveryShow/Dto
 import type { PzAccountSdkIdentityViewDto } from '../Features/IdTokenVerify/Dtos/PzAccountSdkIdentityViewDto.js';
 import { PzAccountSdkIdTokenVerifyDto, type PzAccountSdkIdTokenVerifyInput } from '../Features/IdTokenVerify/Dtos/PzAccountSdkIdTokenVerifyDto.js';
 import { PzAccountSdkLogoutUrlDto, type PzAccountSdkLogoutUrlInput } from '../Features/LogoutUrl/Dtos/PzAccountSdkLogoutUrlDto.js';
+import type { PzAccountSdkApplicationListViewDto } from '../Features/MeApplicationList/Dtos/PzAccountSdkApplicationListViewDto.js';
 import type { PzAccountSdkConsentListViewDto } from '../Features/MeConsentList/Dtos/PzAccountSdkConsentListViewDto.js';
 import { PzAccountSdkMeConsentRevokeDto, type PzAccountSdkMeConsentRevokeInput } from '../Features/MeConsentRevoke/Dtos/PzAccountSdkMeConsentRevokeDto.js';
 import { PzAccountSdkMeEmailChangeDto, type PzAccountSdkMeEmailChangeInput } from '../Features/MeEmailChange/Dtos/PzAccountSdkMeEmailChangeDto.js';
@@ -85,6 +86,7 @@ export interface PzAccountSdkFakeInputs {
   meMfaRecoveryCodesRegenerate: PzAccountSdkMeMfaRecoveryCodesRegenerateDto;
   meConsentList: PzAccountSdkAccessTokenDto;
   meConsentRevoke: PzAccountSdkMeConsentRevokeDto;
+  meApplicationList: PzAccountSdkAccessTokenDto;
 }
 
 type LocalMethod = 'pkceCreate' | 'authorizeUrl' | 'logoutUrl' | 'accountUrl';
@@ -377,6 +379,10 @@ export class PzAccountSdkClientFake extends PzAccountSdkClient {
 
   override meConsentRevoke(input: PzAccountSdkMeConsentRevokeDto | PzAccountSdkMeConsentRevokeInput): Promise<PzAccountSdkResultDto> {
     return this.resolve('meConsentRevoke', () => toDto(PzAccountSdkMeConsentRevokeDto, PzAccountSdkMeConsentRevokeDto.from, input));
+  }
+
+  override meApplicationList(input: PzAccountSdkAccessTokenDto | PzAccountSdkAccessTokenInput): Promise<PzAccountSdkApplicationListViewDto> {
+    return this.resolve('meApplicationList', () => this.tokenInput(input));
   }
 
   private async resolve<M extends PzAccountSdkFakeMethod>(

@@ -10,6 +10,8 @@ import { PzAccountSdkIdTokenVerifyDto, type PzAccountSdkIdTokenVerifyInput } fro
 import { PzAccountSdkIdTokenVerifyGateway } from './Features/IdTokenVerify/Gateways/PzAccountSdkIdTokenVerifyGateway.js';
 import { PzAccountSdkLogoutUrlDto, type PzAccountSdkLogoutUrlInput } from './Features/LogoutUrl/Dtos/PzAccountSdkLogoutUrlDto.js';
 import { PzAccountSdkLogoutUrlService } from './Features/LogoutUrl/Services/PzAccountSdkLogoutUrlService.js';
+import type { PzAccountSdkApplicationListViewDto } from './Features/MeApplicationList/Dtos/PzAccountSdkApplicationListViewDto.js';
+import { PzAccountSdkMeApplicationListGateway } from './Features/MeApplicationList/Gateways/PzAccountSdkMeApplicationListGateway.js';
 import type { PzAccountSdkConsentListViewDto } from './Features/MeConsentList/Dtos/PzAccountSdkConsentListViewDto.js';
 import { PzAccountSdkMeConsentListGateway } from './Features/MeConsentList/Gateways/PzAccountSdkMeConsentListGateway.js';
 import { PzAccountSdkMeConsentRevokeDto, type PzAccountSdkMeConsentRevokeInput } from './Features/MeConsentRevoke/Dtos/PzAccountSdkMeConsentRevokeDto.js';
@@ -319,6 +321,12 @@ export class PzAccountSdkClient implements PzAccountSdkClientInterface {
       new PzAccountSdkMeConsentRevokeGateway(this.config, this.fetchFn).execute(
         toDto(PzAccountSdkMeConsentRevokeDto, PzAccountSdkMeConsentRevokeDto.from, input),
       ),
+    );
+  }
+
+  meApplicationList(input: PzAccountSdkAccessTokenDto | PzAccountSdkAccessTokenInput): Promise<PzAccountSdkApplicationListViewDto> {
+    return this.run(() =>
+      new PzAccountSdkMeApplicationListGateway(this.config, this.fetchFn).execute(this.accessToken(input)),
     );
   }
 

@@ -112,3 +112,7 @@ export { PzAccountSdkConsentListViewDto } from './Features/MeConsentList/Dtos/Pz
 export type { PzAccountSdkConsentListViewFields } from './Features/MeConsentList/Dtos/PzAccountSdkConsentListViewDto.js';
 export { PzAccountSdkMeConsentRevokeDto } from './Features/MeConsentRevoke/Dtos/PzAccountSdkMeConsentRevokeDto.js';
 export type { PzAccountSdkMeConsentRevokeInput } from './Features/MeConsentRevoke/Dtos/PzAccountSdkMeConsentRevokeDto.js';
+export { PzAccountSdkApplicationViewDto } from './Features/MeApplicationList/Dtos/PzAccountSdkApplicationViewDto.js';
+export type { PzAccountSdkApplicationViewFields } from './Features/MeApplicationList/Dtos/PzAccountSdkApplicationViewDto.js';
+export { PzAccountSdkApplicationListViewDto } from './Features/MeApplicationList/Dtos/PzAccountSdkApplicationListViewDto.js';
+export type { PzAccountSdkApplicationListViewFields } from './Features/MeApplicationList/Dtos/PzAccountSdkApplicationListViewDto.js';

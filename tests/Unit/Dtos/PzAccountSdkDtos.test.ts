@@ -4,6 +4,7 @@ import { PzAccountSdkPromptEnum } from '../../../src/Enum/PzAccountSdkPromptEnum
 import { PzAccountSdkTokenTypeHintEnum } from '../../../src/Enum/PzAccountSdkTokenTypeHintEnum.js';
 import { PzAccountSdkAuthorizeUrlDto } from '../../../src/Features/AuthorizeUrl/Dtos/PzAccountSdkAuthorizeUrlDto.js';
 import { PzAccountSdkIdentityViewDto } from '../../../src/Features/IdTokenVerify/Dtos/PzAccountSdkIdentityViewDto.js';
+import { PzAccountSdkApplicationListViewDto } from '../../../src/Features/MeApplicationList/Dtos/PzAccountSdkApplicationListViewDto.js';
 import { PzAccountSdkConsentListViewDto } from '../../../src/Features/MeConsentList/Dtos/PzAccountSdkConsentListViewDto.js';
 import { PzAccountSdkResultDto } from '../../../src/Features/Shared/Dtos/PzAccountSdkResultDto.js';
 import { PzAccountSdkTokenViewDto } from '../../../src/Features/Shared/Dtos/PzAccountSdkTokenViewDto.js';
@@ -54,6 +55,7 @@ describe('DTOs', () => {
     ['identity', PzAccountSdkIdentityViewDto, { sub: 's', amr: ['pwd'], claims: { sub: 's' }, http_status: 200 }],
     ['webhook', PzAccountSdkWebhookEventViewDto, { event_type: 'tokens.revoked', data: { a: 1 }, http_status: 200 }],
     ['consents', PzAccountSdkConsentListViewDto, { consents: [{ client_id: 'c', scopes: ['a'] }], http_status: 200 }],
+    ['applications', PzAccountSdkApplicationListViewDto, { applications: [{ client_id: 'c', is_first_party: true }], http_status: 200 }],
   ] as const)('the %s view round-trips through toArray', (_name, Dto, values) => {
     const dto = (Dto as { from(v: unknown): PzAccountSdkResultDto }).from(values);
 

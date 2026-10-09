@@ -1,5 +1,6 @@
 import { PzAccountSdkDiscoveryViewDto } from '../Features/DiscoveryShow/Dtos/PzAccountSdkDiscoveryViewDto.js';
 import { PzAccountSdkIdentityViewDto } from '../Features/IdTokenVerify/Dtos/PzAccountSdkIdentityViewDto.js';
+import { PzAccountSdkApplicationListViewDto } from '../Features/MeApplicationList/Dtos/PzAccountSdkApplicationListViewDto.js';
 import { PzAccountSdkConsentListViewDto } from '../Features/MeConsentList/Dtos/PzAccountSdkConsentListViewDto.js';
 import { PzAccountSdkMfaEnrollViewDto } from '../Features/MeMfaEnroll/Dtos/PzAccountSdkMfaEnrollViewDto.js';
 import { PzAccountSdkMfaStatusViewDto } from '../Features/MeMfaShow/Dtos/PzAccountSdkMfaStatusViewDto.js';
@@ -41,6 +42,7 @@ const RETURN_DTO = {
   meMfaRecoveryCodesRegenerate: PzAccountSdkMfaRecoveryCodesViewDto,
   meConsentList: PzAccountSdkConsentListViewDto,
   meConsentRevoke: PzAccountSdkResultDto,
+  meApplicationList: PzAccountSdkApplicationListViewDto,
 } satisfies Record<string, ReturnDto>;
 
 /** Operações programáveis do fake (as que falam com o provedor). */
@@ -83,6 +85,7 @@ export const PzAccountSdkFakeResponses = {
     meMfaRecoveryCodesRegenerate: 201,
     meConsentList: 200,
     meConsentRevoke: 204,
+    meApplicationList: 200,
   },
 
   FAKE_ISSUER: 'https://account.pzaccountsdk.test',
@@ -177,6 +180,8 @@ export const PzAccountSdkFakeResponses = {
         return recoveryCodes;
       case 'meConsentList':
         return { consents: [] };
+      case 'meApplicationList':
+        return { applications: [] };
       default:
         return {};
     }

@@ -6,7 +6,8 @@ export interface PzAccountSdkAccessTokenInput {
 
 /**
  * Entrada das operações que só precisam do access token do usuário:
- * `userInfoShow`, `meShow`, `mePictureDelete`, `meMfaShow` e `meConsentList`.
+ * `userInfoShow`, `meShow`, `mePictureDelete`, `meMfaShow`, `meConsentList` e
+ * `meApplicationList`.
  *
  * O SDK não guarda sessão: o token é do usuário, e quem o armazena é o produto.
  */

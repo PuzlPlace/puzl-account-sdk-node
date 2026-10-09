@@ -32,6 +32,7 @@ const INPUTS: Record<PzAccountSdkFakeMethod, unknown> = {
   meMfaRecoveryCodesRegenerate: { access_token: 'a', current_password: 'c', code: '1' },
   meConsentList: { access_token: 'a' },
   meConsentRevoke: { access_token: 'a', client_id: 'c' },
+  meApplicationList: { access_token: 'a' },
 };
 
 const call = (fake: PzAccountSdkClientFake, method: PzAccountSdkFakeMethod) =>
@@ -58,6 +59,7 @@ describe('PzAccountSdkClientFake', () => {
 
     expect((await fake.meMfaShow({ access_token: 't' })).isSuccess()).toBe(true);
     expect((await fake.meConsentList({ access_token: 't' })).consents).toEqual([]);
+    expect((await fake.meApplicationList({ access_token: 't' })).applications).toEqual([]);
     expect((await fake.discoveryShow()).issuer).toBe(PzAccountSdkClientFake.FAKE_ISSUER);
   });
 

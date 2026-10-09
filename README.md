@@ -159,6 +159,7 @@ Toda operação aceita o DTO de entrada (`new PzAccountSdkTokenRefreshDto({...})
 | `mePictureUpload()` · `mePicturePresetSet()` · `mePictureDelete()` | `/api/identity/me/picture*` | 200 |
 | `meMfaShow()` · `meMfaEnroll()` · `meMfaEnrollConfirm()` · `meMfaDisable()` · `meMfaRecoveryCodesRegenerate()` | `/api/identity/me/mfa*` | 200/201/204 |
 | `meConsentList()` · `meConsentRevoke()` | `/api/identity/me/consents*` | 200/204 |
+| `meApplicationList()` | GET `/api/identity/me/applications` | 200 |
 
 Comportamentos que exigem atenção:
 
@@ -169,6 +170,7 @@ Comportamentos que exigem atenção:
 - **`meUpdate`:** é um PUT completo, e opcional vazio apaga o valor. Parta da conta atual: `PzAccountSdkMeUpdateDto.fromUser(token, me.user, { name: 'Novo' })`, com o `me.user` de um `meShow` bem-sucedido.
 - **`mePictureUpload`:** `contents` aceita `Buffer`, `Uint8Array` (ou outra view) ou `ArrayBuffer`. A extensão do `filename` define o Content-Type. Para ler do disco, use `PzAccountSdkMePictureUploadDto.fromPath(token, caminho)`.
 - **Revogação de tokens:** trocar a senha ou desligar o MFA revoga os tokens do usuário.
+- **`meApplicationList`:** apps em que o usuário está cadastrado. `is_first_party` separa os da Puzl (entram no primeiro login) dos de terceiros (saem quando o usuário revoga o acesso). Não é controle de acesso, e o próprio app que consulta aparece se o usuário já entrou nele.
 
 ## Webhooks
 

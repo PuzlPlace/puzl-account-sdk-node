@@ -461,6 +461,7 @@ res.redirect(puzl.accountUrl(PzAccountSdkAccountPageEnum.PASSWORD));</code></pre
               <tr><td class="p-3 font-mono text-xs">mePictureUpload · mePicturePresetSet · mePictureDelete</td><td class="p-3 font-mono text-xs">…/me/picture*</td><td class="p-3">Foto da conta.</td></tr>
               <tr><td class="p-3 font-mono text-xs">meMfaShow · meMfaEnroll · meMfaEnrollConfirm · meMfaDisable · meMfaRecoveryCodesRegenerate</td><td class="p-3 font-mono text-xs">…/me/mfa*</td><td class="p-3">Autenticação em dois fatores (TOTP).</td></tr>
               <tr><td class="p-3 font-mono text-xs">meConsentList · meConsentRevoke</td><td class="p-3 font-mono text-xs">…/me/consents*</td><td class="p-3">Apps com acesso à conta.</td></tr>
+              <tr><td class="p-3 font-mono text-xs">meApplicationList</td><td class="p-3 font-mono text-xs">GET …/me/applications</td><td class="p-3">Apps em que o usuário está cadastrado, da Puzl e de terceiros (<code>is_first_party</code>). Não é controle de acesso.</td></tr>
             </tbody>
           </table>
         </div>

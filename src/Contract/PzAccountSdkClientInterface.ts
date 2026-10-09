@@ -4,6 +4,7 @@ import type { PzAccountSdkDiscoveryViewDto } from '../Features/DiscoveryShow/Dto
 import type { PzAccountSdkIdentityViewDto } from '../Features/IdTokenVerify/Dtos/PzAccountSdkIdentityViewDto.js';
 import type { PzAccountSdkIdTokenVerifyDto, PzAccountSdkIdTokenVerifyInput } from '../Features/IdTokenVerify/Dtos/PzAccountSdkIdTokenVerifyDto.js';
 import type { PzAccountSdkLogoutUrlDto, PzAccountSdkLogoutUrlInput } from '../Features/LogoutUrl/Dtos/PzAccountSdkLogoutUrlDto.js';
+import type { PzAccountSdkApplicationListViewDto } from '../Features/MeApplicationList/Dtos/PzAccountSdkApplicationListViewDto.js';
 import type { PzAccountSdkConsentListViewDto } from '../Features/MeConsentList/Dtos/PzAccountSdkConsentListViewDto.js';
 import type { PzAccountSdkMeConsentRevokeDto, PzAccountSdkMeConsentRevokeInput } from '../Features/MeConsentRevoke/Dtos/PzAccountSdkMeConsentRevokeDto.js';
 import type { PzAccountSdkMeEmailChangeDto, PzAccountSdkMeEmailChangeInput } from '../Features/MeEmailChange/Dtos/PzAccountSdkMeEmailChangeDto.js';
@@ -157,4 +158,9 @@ export interface PzAccountSdkClientInterface {
 
   /** Tira o acesso de um aplicativo à conta. */
   meConsentRevoke(input: PzAccountSdkMeConsentRevokeDto | PzAccountSdkMeConsentRevokeInput): Promise<PzAccountSdkResultDto>;
+
+  // API da conta — aplicativos do usuário
+
+  /** Aplicativos em que o usuário está cadastrado, da Puzl e de terceiros. */
+  meApplicationList(input: PzAccountSdkAccessTokenDto | PzAccountSdkAccessTokenInput): Promise<PzAccountSdkApplicationListViewDto>;
 }
